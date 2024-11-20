@@ -16,8 +16,8 @@ find_package(assimp REQUIRED)
 set(TARGET_NAME "${PROJECT_NAME}")
 set(PROJECT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 
-set(INCLUDE_DIR "include")
-set(SOURCES_DIR "src")
+set(INCLUDE_DIR "${PROJECT_ROOT}/include")
+set(SOURCES_DIR "${PROJECT_ROOT}/src")
 set(SHADERS_DIR "${SOURCES_DIR}/shaders")
 set(SHADERS_H "${INCLUDE_DIR}/shaders.h")
 file(GLOB shaders_sources "${SHADERS_DIR}/*.*")
@@ -27,7 +27,7 @@ set(UTILS_DIR "utils")
 add_custom_command(
     OUTPUT ${SHADERS_H}
     COMMAND ${UTILS_DIR}/shaderhexdump "${PROJECT_ROOT}/${SHADERS_DIR}" "${PROJECT_ROOT}/${SHADERS_H}"
-    DEPENDS ${shaders_sources} ${UTILS_DIR}/shaderhexdump
+    DEPENDS ${shaders_sources}
     WORKING_DIRECTORY ${PROJECT_ROOT}
 )
 
