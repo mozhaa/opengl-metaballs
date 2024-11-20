@@ -19,25 +19,12 @@ set(PROJECT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 set(INCLUDE_DIR "${PROJECT_ROOT}/include")
 set(SOURCES_DIR "${PROJECT_ROOT}/src")
 set(SHADERS_DIR "${SOURCES_DIR}/shaders")
-set(SHADERS_H "${INCLUDE_DIR}/shaders.h")
-file(GLOB shaders_sources "${SHADERS_DIR}/*.*")
 
-set(UTILS_DIR "utils")
+add_definitions(-DSHADERS_DIR="${SHADERS_DIR}")
 
-add_custom_command(
-    OUTPUT ${SHADERS_H}
-    COMMAND ${UTILS_DIR}/shaderhexdump "${PROJECT_ROOT}/${SHADERS_DIR}" "${PROJECT_ROOT}/${SHADERS_H}"
-    DEPENDS ${shaders_sources}
-    WORKING_DIRECTORY ${PROJECT_ROOT}
-)
-
-message("${UTILS_DIR}/shaderhexdump ${PROJECT_ROOT}/${SHADERS_DIR} ${PROJECT_ROOT}/${SHADERS_H}")
-
-file(GLOB sources "${SOURCES_DIR}/*.c" "${SOURCES_DIR}/*.cc" "${SOURCES_DIR}/*.cpp")
-file(GLOB headers "${INCLUDE_DIR}/*.h" "${INCLUDE_DIR}/*.hpp")
+file(GLOB sources CONFIGURE_DEPENDS "${SOURCES_DIR}/*.c" "${SOURCES_DIR}/*.cc" "${SOURCES_DIR}/*.cpp")
+file(GLOB headers CONFIGURE_DEPENDS "${INCLUDE_DIR}/*.h" "${INCLUDE_DIR}/*.hpp")
 list(APPEND headers ${SHADERS_H})
-
-message("${sources} ${headers}")
 
 add_executable(${TARGET_NAME} ${sources} ${headers})
 target_include_directories(${TARGET_NAME} PRIVATE ${INCLUDE_DIR})

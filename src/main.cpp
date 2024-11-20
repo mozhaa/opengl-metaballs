@@ -25,7 +25,7 @@ INITIALIZE_EASYLOGGINGPP
 #include <vector>
 #include <cmath>
 
-#include "shaders.h"
+#include "shaderload.h"
 
 
 std::string to_string(std::string_view str) {
@@ -86,52 +86,10 @@ void glew_init() {
         throw std::runtime_error("OpenGL 3.3 is not supported");
 }
 
-GLuint create_shader(GLenum type, const char * source) {
-    GLuint result = glCreateShader(type);
-    glShaderSource(result, 1, &source, nullptr);
-    glCompileShader(result);
-    GLint status;
-    glGetShaderiv(result, GL_COMPILE_STATUS, &status);
-    if (status != GL_TRUE)
-    {
-        GLint info_log_length;
-        glGetShaderiv(result, GL_INFO_LOG_LENGTH, &info_log_length);
-        std::string info_log(info_log_length, '\0');
-        glGetShaderInfoLog(result, info_log.size(), nullptr, info_log.data());
-        throw std::runtime_error("Shader compilation failed: " + info_log);
-    }
-    return result;
-}
-
-GLuint create_program(const std::vector<GLuint>& shaders) {
-    GLuint result = glCreateProgram();
-    for (auto shader: shaders)
-        glAttachShader(result, shader);
-    glLinkProgram(result);
-
-    GLint status;
-    glGetProgramiv(result, GL_LINK_STATUS, &status);
-    if (status != GL_TRUE)
-    {
-        GLint info_log_length;
-        glGetProgramiv(result, GL_INFO_LOG_LENGTH, &info_log_length);
-        std::string info_log(info_log_length, '\0');
-        glGetProgramInfoLog(result, info_log.size(), nullptr, info_log.data());
-        throw std::runtime_error("Program linkage failed: " + info_log);
-    }
-
-    return result;
-}
-
-GLuint create_program_from_sources(const char* vertex_source, const char* fragment_source, const char* geometry_source = "") {
-    std::vector<GLuint> shaders = {};
-    shaders.push_back(create_shader(GL_VERTEX_SHADER, vertex_source));
-    shaders.push_back(create_shader(GL_FRAGMENT_SHADER, fragment_source));
-    if (strlen(geometry_source) > 0)
-        shaders.push_back(create_shader(GL_GEOMETRY_SHADER, geometry_source));
-    auto program = create_program(shaders);
-    return program;
-}
+struct rectangle {
+    glm::vec2 position;
+    glm::vec2 size;
+};
 
 int main(int argc, char* argv[]) try {
     START_EASYLOGGINGPP(argc, argv);
@@ -145,9 +103,13 @@ int main(int argc, char* argv[]) try {
     SDL_GetWindowSize(window, &width, &height);
     glViewport(0, 0, width, height);
 
+    const std::string project_root = PROJECT_ROOT;
+    const std::string shaders_dir = SHADERS_DIR;
+
     auto program = create_program({
-        create_shader(GL_VERTEX_SHADER, shader_vert),
-        create_shader(GL_FRAGMENT_SHADER, shader_frag),
+        shaders_dir + "/shader.vert", 
+        shaders_dir + "/shader.geom", 
+        shaders_dir + "/shader.frag",
     });
 
     auto last_frame_start = std::chrono::high_resolution_clock::now();
@@ -155,6 +117,28 @@ int main(int argc, char* argv[]) try {
     std::map<SDL_Keycode, bool> button_down;
 
     glClearColor(0.8f, 0.8f, 1.f, 0.f);
+
+
+    GLuint VAO, VBO;
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+    
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_VERTEX_ARRAY, VBO);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(rectangle), (void*)(offsetof(rectangle, position)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(rectangle), (void*)(offsetof(rectangle, size)));
+
+    rectangle r = {
+        {0.f, 0.f},
+        {1.f, 1.f}
+    };
+    glBufferData(GL_ARRAY_BUFFER, sizeof(rectangle), &r, GL_STATIC_DRAW);
+
+    LOG(INFO) << r.position.x << " " << r.position.y;
+
 
     bool running = true;
     while (running) {
@@ -187,7 +171,14 @@ int main(int argc, char* argv[]) try {
         float dt = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_frame_start).count();
         time += dt;
 
+        glm::mat4 view(1.f);
+
+        glDisable(GL_DEPTH_TEST);
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glUseProgram(program);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_POINTS, 0, 1);
 
         SDL_GL_SwapWindow(window);
     }
