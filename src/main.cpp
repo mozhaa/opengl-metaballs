@@ -12,29 +12,24 @@ INITIALIZE_EASYLOGGINGPP
 
 #define GLM_FORCE_SWIZZLE
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/vec3.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
 
-#include <stdexcept>
-#include <iostream>
 #include <chrono>
-#include <vector>
 #include <cmath>
+#include <iostream>
+#include <stdexcept>
+#include <vector>
 
 #include "shaderload.h"
 
+std::string to_string(std::string_view str) { return std::string(str.begin(), str.end()); }
 
-std::string to_string(std::string_view str) {
-    return std::string(str.begin(), str.end());
-}
-
-void sdl2_fail(std::string_view message) {
-    throw std::runtime_error(to_string(message) + SDL_GetError());
-}
+void sdl2_fail(std::string_view message) { throw std::runtime_error(to_string(message) + SDL_GetError()); }
 
 void glew_fail(std::string_view message, GLenum error) {
     throw std::runtime_error(to_string(message) + reinterpret_cast<const char *>(glewGetErrorString(error)));
@@ -58,12 +53,9 @@ void set_gl_attributes() {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 }
 
-SDL_Window* create_window() {
-    SDL_Window * window = SDL_CreateWindow("Graphics course practice 5",
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        800, 600,
-        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);
+SDL_Window *create_window() {
+    SDL_Window *window = SDL_CreateWindow("Graphics course practice 5", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                                          800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);
 
     if (!window)
         sdl2_fail("SDL_CreateWindow: ");
@@ -71,7 +63,7 @@ SDL_Window* create_window() {
     return window;
 }
 
-SDL_GLContext create_context(SDL_Window* window) {
+SDL_GLContext create_context(SDL_Window *window) {
     SDL_GLContext gl_context = SDL_GL_CreateContext(window);
     if (!gl_context)
         sdl2_fail("SDL_GL_CreateContext: ");
@@ -91,7 +83,7 @@ struct rectangle {
     glm::vec2 size;
 };
 
-int main(int argc, char* argv[]) try {
+int main(int argc, char *argv[]) try {
     START_EASYLOGGINGPP(argc, argv);
     sdl_init();
     set_gl_attributes();
@@ -107,8 +99,8 @@ int main(int argc, char* argv[]) try {
     const std::string shaders_dir = SHADERS_DIR;
 
     auto program = create_program({
-        shaders_dir + "/shader.vert", 
-        shaders_dir + "/shader.geom", 
+        shaders_dir + "/shader.vert",
+        shaders_dir + "/shader.geom",
         shaders_dir + "/shader.frag",
     });
 
@@ -118,55 +110,50 @@ int main(int argc, char* argv[]) try {
 
     glClearColor(0.8f, 0.8f, 1.f, 0.f);
 
-
     GLuint VAO, VBO;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
-    
+
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_VERTEX_ARRAY, VBO);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(rectangle), (void*)(offsetof(rectangle, position)));
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(rectangle), (void *)(offsetof(rectangle, position)));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(rectangle), (void*)(offsetof(rectangle, size)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(rectangle), (void *)(offsetof(rectangle, size)));
 
-    rectangle r = {
-        {0.f, 0.f},
-        {1.f, 1.f}
-    };
+    rectangle r = {{0.f, 0.f}, {1.f, 1.f}};
     glBufferData(GL_ARRAY_BUFFER, sizeof(rectangle), &r, GL_STATIC_DRAW);
 
     LOG(INFO) << r.position.x << " " << r.position.y;
 
-
     bool running = true;
     while (running) {
-        for (SDL_Event event; SDL_PollEvent(&event);) switch (event.type)
-        {
-        case SDL_QUIT:
-            running = false;
-            break;
-        case SDL_WINDOWEVENT: switch (event.window.event)
-            {
-            case SDL_WINDOWEVENT_RESIZED:
-                width = event.window.data1;
-                height = event.window.data2;
-                glViewport(0, 0, width, height);
+        for (SDL_Event event; SDL_PollEvent(&event);)
+            switch (event.type) {
+            case SDL_QUIT:
+                running = false;
+                break;
+            case SDL_WINDOWEVENT:
+                switch (event.window.event) {
+                case SDL_WINDOWEVENT_RESIZED:
+                    width = event.window.data1;
+                    height = event.window.data2;
+                    glViewport(0, 0, width, height);
+                    break;
+                }
+                break;
+            case SDL_KEYDOWN:
+                button_down[event.key.keysym.sym] = true;
+                break;
+            case SDL_KEYUP:
+                button_down[event.key.keysym.sym] = false;
                 break;
             }
-            break;
-        case SDL_KEYDOWN:
-            button_down[event.key.keysym.sym] = true;
-            break;
-        case SDL_KEYUP:
-            button_down[event.key.keysym.sym] = false;
-            break;
-        }
 
         if (!running)
             break;
-        
+
         auto now = std::chrono::high_resolution_clock::now();
         float dt = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_frame_start).count();
         time += dt;
@@ -183,7 +170,7 @@ int main(int argc, char* argv[]) try {
         SDL_GL_SwapWindow(window);
     }
 
-} catch (std::exception const & e) {
+} catch (std::exception const &e) {
     std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
 }

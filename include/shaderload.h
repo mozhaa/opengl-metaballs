@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string>
-#include <filesystem>
-#include <vector>
 #include <GL/glew.h>
+#include <filesystem>
+#include <string>
+#include <vector>
 
 std::string get_shader_source(std::filesystem::path source_file);
 

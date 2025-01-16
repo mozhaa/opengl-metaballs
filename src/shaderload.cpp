@@ -1,13 +1,13 @@
 #include "shaderload.h"
 
-#include <fstream>
-#include <sstream>
-#include <iostream>
 #include <algorithm>
 #include <cctype>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
-static void make_lower(std::string& s) {
-    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c){ return std::tolower(c); });
+static void make_lower(std::string &s) {
+    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); });
 }
 
 static GLenum get_type(std::filesystem::path source_file) {
@@ -34,7 +34,7 @@ std::string get_shader_source(std::filesystem::path source_file) {
 GLuint load_shader(std::filesystem::path source_file) {
     GLuint result = glCreateShader(get_type(source_file));
     std::string source = get_shader_source(source_file);
-    const char* source_c = source.c_str();
+    const char *source_c = source.c_str();
     glShaderSource(result, 1, &source_c, nullptr);
     glCompileShader(result);
     GLint status;
@@ -58,7 +58,7 @@ std::vector<GLuint> load_shaders(std::vector<std::filesystem::path> source_files
 
 GLuint create_program(std::vector<std::filesystem::path> source_files) {
     GLuint result = glCreateProgram();
-    for (auto shader: load_shaders(source_files))
+    for (auto shader : load_shaders(source_files))
         glAttachShader(result, shader);
     glLinkProgram(result);
 

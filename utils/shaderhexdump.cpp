@@ -1,6 +1,6 @@
 #include <fstream>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <string>
 
 #include "glob.hpp"
@@ -8,7 +8,7 @@
 char buffer[2391];
 const int maxBytesInLine = 120 / 6;
 
-void append_byte(std::ofstream& fout, unsigned int value) {
+void append_byte(std::ofstream &fout, unsigned int value) {
     static int bytesInLine = 0;
     if (value > 0xff) {
         value -= 0xffffff00;
@@ -25,8 +25,7 @@ void append_byte(std::ofstream& fout, unsigned int value) {
     }
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     if (argc != 3) {
         std::cerr << "Usage: " << argv[0] << " <sourceDir> <headerFile>" << std::endl;
         return 1;
@@ -48,14 +47,14 @@ int main(int argc, char **argv)
     fout << "#define SHADERS_H_INCLUDED_" << std::endl;
     fout << std::endl;
     fout << "#include <cstddef>" << std::endl;
-    
-    for (auto& sourcePath : glob::glob(sourceDirectory + "/*.*")) {
+
+    for (auto &sourcePath : glob::glob(sourceDirectory + "/*.*")) {
         std::ifstream fin(sourcePath, std::ios::binary);
         if (!fin) {
             std::cerr << "Can't open file " << sourcePath << "!" << std::endl;
             return 1;
         }
-        
+
         std::string arrayName = sourcePath.filename();
         std::replace(arrayName.begin(), arrayName.end(), '.', '_');
         fout << std::endl;
@@ -68,7 +67,7 @@ int main(int argc, char **argv)
             fin.read(buffer, sizeof(buffer) / sizeof(char));
             n = fin.gcount();
             for (std::streamsize i = 0; i < n; ++i) {
-                unsigned int value = (unsigned int) buffer[i];
+                unsigned int value = (unsigned int)buffer[i];
                 append_byte(fout, value);
             }
         } while (n > 0);
