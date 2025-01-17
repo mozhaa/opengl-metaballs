@@ -1,0 +1,41 @@
+#version 430 core
+
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout (rgba32f, binding = 0) uniform image3D image;
+
+#define n_balls 10
+
+uniform vec3 positions[n_balls];
+uniform vec3 colors[n_balls];
+uniform float radiuses[n_balls];
+
+float ball_value(int i, vec3 point) { 
+    return exp(-length(point - positions[i]) / radiuses[i]); 
+}
+
+vec4 calculate(vec3 point) {
+    vec4 result = vec4(0.0, 0.0, 0.0, 0.0);
+    for (int i = 0; i < n_balls; ++i) {
+        float value = ball_value(i, point);
+        result += vec4(colors[i] * value, value);
+    }
+    result.xyz = result.xyz / result.z;
+    return result;
+}
+
+vec3 index_to_point(ivec3 index) {
+    ivec3 grid_size = imageSize(image);
+    return vec3(
+        2.0 * index.x / grid_size.x - 1, 
+        2.0 * index.y / grid_size.y - 1, 
+        2.0 * index.z / grid_size.z - 1
+    );
+}
+
+void main() {
+    ivec3 texel_index = ivec3(gl_GlobalInvocationID.xyz);
+    vec3 point = index_to_point(texel_index);
+    vec4 result = calculate(point);
+    // result = vec4(1.0, 0.0, 0.0, 1.0);
+    imageStore(image, texel_index, result);
+}

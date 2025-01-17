@@ -27,6 +27,8 @@ INITIALIZE_EASYLOGGINGPP
 
 #include "shaderload.h"
 
+#include "metaball.hpp"
+
 std::string to_string(std::string_view str) { return std::string(str.begin(), str.end()); }
 
 void sdl2_fail(std::string_view message) { throw std::runtime_error(to_string(message) + SDL_GetError()); }
@@ -99,9 +101,8 @@ int main(int argc, char *argv[]) try {
     const std::string shaders_dir = SHADERS_DIR;
 
     auto program = create_program({
-        shaders_dir + "/shader.vert",
-        shaders_dir + "/shader.geom",
-        shaders_dir + "/shader.frag",
+        shaders_dir + "/2dtexture_view.vert",
+        shaders_dir + "/2dtexture_view.frag",
     });
 
     auto last_frame_start = std::chrono::high_resolution_clock::now();
@@ -110,22 +111,12 @@ int main(int argc, char *argv[]) try {
 
     glClearColor(0.8f, 0.8f, 1.f, 0.f);
 
-    GLuint VAO, VBO;
+    scene s;
+    function_texture f(4);
+
+    GLuint VAO;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
-
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_VERTEX_ARRAY, VBO);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(rectangle), (void *)(offsetof(rectangle, position)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(rectangle), (void *)(offsetof(rectangle, size)));
-
-    rectangle r = {{0.f, 0.f}, {1.f, 1.f}};
-    glBufferData(GL_ARRAY_BUFFER, sizeof(rectangle), &r, GL_STATIC_DRAW);
-
-    LOG(INFO) << r.position.x << " " << r.position.y;
 
     bool running = true;
     while (running) {
@@ -156,16 +147,19 @@ int main(int argc, char *argv[]) try {
 
         auto now = std::chrono::high_resolution_clock::now();
         float dt = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_frame_start).count();
+        last_frame_start = now;
         time += dt;
 
-        glm::mat4 view(1.f);
+        s.update_positions(time);
+        f.calculate(s);
 
         glDisable(GL_DEPTH_TEST);
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         glUseProgram(program);
+        glUniform1i(glGetUniformLocation(program, "tex"), f.texture_id);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_POINTS, 0, 1);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         SDL_GL_SwapWindow(window);
     }
