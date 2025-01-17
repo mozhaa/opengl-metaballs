@@ -28,6 +28,7 @@ INITIALIZE_EASYLOGGINGPP
 #include "shaderload.h"
 
 #include "metaball.hpp"
+#include "grid3d.hpp"
 
 std::string to_string(std::string_view str) { return std::string(str.begin(), str.end()); }
 
@@ -113,6 +114,7 @@ int main(int argc, char *argv[]) try {
 
     metaballs_collection balls;
     metaballs_texture field;
+    grid3d grid(grid_size);
 
     GLuint VAO;
     glGenVertexArrays(1, &VAO);
@@ -149,25 +151,24 @@ int main(int argc, char *argv[]) try {
         float dt = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_frame_start).count();
         last_frame_start = now;
         time += dt;
-
+        
         // update balls positions
         balls.update_positions(time);
 
         // compute function using compute shader
         field.compute(balls);
 
-        // bind resulting texture
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_3D, field.texture);
-
-        
-        
         glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glUseProgram(program);
-        glUniform1i(glGetUniformLocation(program, "tex"), 0);
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        // draw grid
+        grid.draw(field);
+        
+        // glUseProgram(program);
+        // glUniform1i(glGetUniformLocation(program, "tex"), 0);
+        // glBindVertexArray(VAO);
+        // glDrawArrays(GL_TRIANGLES, 0, 6);
 
         SDL_GL_SwapWindow(window);
     }

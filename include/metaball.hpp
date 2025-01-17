@@ -8,7 +8,7 @@
 #include <glm/mat4x4.hpp>
 
 const int n_balls = 10;
-const int grid_size = 128;
+const int grid_size = 4;
 
 /**
  * Struct, that represents collection of <n_balls> metaballs
