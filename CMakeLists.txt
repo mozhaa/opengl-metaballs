@@ -42,3 +42,4 @@ target_link_libraries(${TARGET_NAME} PUBLIC
 	"${ASSIMP_LIBRARIES}"
 )
 target_compile_definitions(${TARGET_NAME} PUBLIC -DPROJECT_ROOT="${PROJECT_ROOT}")
+target_compile_options(${TARGET_NAME} PRIVATE -g)
