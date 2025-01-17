@@ -23,8 +23,7 @@ struct scene {
 
 struct function_texture {
     GLuint program, texture;
-    int texture_id;
 
-    function_texture(int texture_id);
+    function_texture();
     void calculate(scene& scene);
 };

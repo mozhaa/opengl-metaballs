@@ -36,12 +36,12 @@ void scene::update_positions(float time) {
 }
 
 
-function_texture::function_texture(int texture_id) : texture_id(texture_id) {
-    program = create_program({std::string(SHADERS_DIR) + "/calculate_function.comp"});
+function_texture::function_texture() {
+    program = create_program({std::string(SHADERS_DIR) + "/compute_function.comp"});
 
     glEnable(GL_TEXTURE_3D);
     glGenTextures(1, &texture);
-    glActiveTexture(GL_TEXTURE0 + texture_id);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_3D, texture);
 
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -58,7 +58,7 @@ function_texture::function_texture(int texture_id) : texture_id(texture_id) {
 void function_texture::calculate(scene& scene) {
     glUseProgram(program);
 
-    glActiveTexture(GL_TEXTURE0 + texture_id);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_3D, texture);
 
     glBindImageTexture(0, texture, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA32F);

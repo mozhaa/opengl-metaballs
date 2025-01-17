@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) try {
     glClearColor(0.8f, 0.8f, 1.f, 0.f);
 
     scene s;
-    function_texture f(4);
+    function_texture f;
 
     GLuint VAO;
     glGenVertexArrays(1, &VAO);
@@ -156,8 +156,11 @@ int main(int argc, char *argv[]) try {
         glDisable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_3D, f.texture);
+
         glUseProgram(program);
-        glUniform1i(glGetUniformLocation(program, "tex"), f.texture_id);
+        glUniform1i(glGetUniformLocation(program, "tex"), 0);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
