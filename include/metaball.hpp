@@ -6,11 +6,13 @@
 #include <glm/mat4x4.hpp>
 #include <vector>
 
-const int n_parameters = 3;
 const int n_balls = 10;
 const int grid_size = 128;
 
-struct scene {
+/**
+ * Struct, that represents collection of <n_balls> metaballs
+ */
+struct metaballs_collection {
     glm::vec3 positions[n_balls];
     glm::vec3 colors[n_balls];
     float radiuses[n_balls];
@@ -20,13 +22,16 @@ struct scene {
     glm::mat4 rotations[n_balls];
     float angular_velocities[n_balls];
 
-    scene();
+    metaballs_collection();
     void update_positions(float time);
 };
 
-struct function_texture {
+/**
+ * GL Texture, that contains computed values of total metaballs function
+ */
+struct metaballs_texture {
     GLuint program, texture;
 
-    function_texture();
-    void calculate(scene& scene);
+    metaballs_texture();
+    void compute(metaballs_collection& scene);
 };

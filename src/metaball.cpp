@@ -12,7 +12,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/mat4x4.hpp>
 
-scene::scene() {
+metaballs_collection::metaballs_collection() {
     std::random_device rd;
     std::mt19937 e2(rd());
     std::uniform_real_distribution<> dist(0.f, 1.f);
@@ -30,7 +30,7 @@ scene::scene() {
     update_positions(0);
 }
 
-void scene::update_positions(float time) {
+void metaballs_collection::update_positions(float time) {
     for (int i = 0; i < n_balls; ++i) {
         float theta = time * angular_velocities[i];
         glm::vec4 planar = glm::vec4(cos(theta) * orbit_scales[i].x, sin(theta) * orbit_scales[i].y, 0.f, 1.f);
@@ -38,7 +38,7 @@ void scene::update_positions(float time) {
     }
 }
 
-function_texture::function_texture() {
+metaballs_texture::metaballs_texture() {
     program = create_program({std::string(SHADERS_DIR) + "/compute_function.comp"});
 
     glEnable(GL_TEXTURE_3D);
@@ -57,7 +57,7 @@ function_texture::function_texture() {
     glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
 }
 
-void function_texture::calculate(scene &scene) {
+void metaballs_texture::compute(metaballs_collection &balls) {
     glUseProgram(program);
 
     glActiveTexture(GL_TEXTURE0);
@@ -65,9 +65,9 @@ void function_texture::calculate(scene &scene) {
 
     glBindImageTexture(0, texture, 0, GL_TRUE, 0, GL_READ_ONLY, GL_RGBA32F);
 
-    glUniform3fv(glGetUniformLocation(program, "positions"), n_balls, reinterpret_cast<float *>(scene.positions));
-    glUniform3fv(glGetUniformLocation(program, "colors"), n_balls, reinterpret_cast<float *>(scene.colors));
-    glUniform1fv(glGetUniformLocation(program, "radiuses"), n_balls, scene.radiuses);
+    glUniform3fv(glGetUniformLocation(program, "positions"), n_balls, reinterpret_cast<float *>(balls.positions));
+    glUniform3fv(glGetUniformLocation(program, "colors"), n_balls, reinterpret_cast<float *>(balls.colors));
+    glUniform1fv(glGetUniformLocation(program, "radiuses"), n_balls, balls.radiuses);
 
     glDispatchCompute(grid_size, grid_size, grid_size);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
