@@ -1,8 +1,9 @@
 #pragma once
 
 #include <GL/glew.h>
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
 #include <vector>
 
 const int n_parameters = 3;
@@ -14,8 +15,10 @@ struct scene {
     glm::vec3 colors[n_balls];
     float radiuses[n_balls];
 
-    glm::vec3 initial_positions[n_balls];
-    glm::vec3 velocities[n_balls];
+    // motion parameters
+    glm::vec2 orbit_scales[n_balls];
+    glm::mat4 rotations[n_balls];
+    float angular_velocities[n_balls];
 
     scene();
     void update_positions(float time);

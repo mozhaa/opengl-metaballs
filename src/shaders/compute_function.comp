@@ -13,13 +13,18 @@ float ball_value(int i, vec3 point) {
     return exp(-length(point - positions[i]) / radiuses[i]); 
 }
 
-vec4 calculate(vec3 point) {
+vec4 compute(vec3 point) {
     vec4 result = vec4(0.0, 0.0, 0.0, 0.0);
+    
+    float values[n_balls];
     for (int i = 0; i < n_balls; ++i) {
-        float value = ball_value(i, point);
-        result += vec4(colors[i] * value, value);
+        values[i] = ball_value(i, point);
+        result.w += ball_value(i, point);
     }
-    result.xyz = result.xyz / result.z;
+
+    for (int i = 0; i < n_balls; ++i)
+        result.xyz += colors[i] * (values[i] / result.w);
+    
     return result;
 }
 
@@ -35,7 +40,6 @@ vec3 index_to_point(ivec3 index) {
 void main() {
     ivec3 texel_index = ivec3(gl_GlobalInvocationID.xyz);
     vec3 point = index_to_point(texel_index);
-    vec4 result = calculate(point);
-    // result = vec4(1.0, 0.0, 0.0, 1.0);
+    vec4 result = compute(point);
     imageStore(image, texel_index, result);
 }
