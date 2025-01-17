@@ -1,7 +1,5 @@
 #include "metaball.hpp"
 
-#include "shaderload.h"
-
 #include <algorithm>
 #include <cmath>
 #include <random>
@@ -11,6 +9,8 @@
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/mat4x4.hpp>
+
+#include "shaderload.h"
 
 metaballs_collection::metaballs_collection() {
     std::random_device rd;

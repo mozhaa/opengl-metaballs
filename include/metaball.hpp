@@ -1,10 +1,11 @@
 #pragma once
 
+#include <vector>
+
 #include <GL/glew.h>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
-#include <vector>
 
 const int n_balls = 10;
 const int grid_size = 128;

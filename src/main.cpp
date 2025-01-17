@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) try {
     glClearColor(0.8f, 0.8f, 1.f, 0.f);
 
     metaballs_collection balls;
-    metaballs_texture T;
+    metaballs_texture field;
 
     GLuint VAO;
     glGenVertexArrays(1, &VAO);
@@ -149,17 +149,18 @@ int main(int argc, char *argv[]) try {
         float dt = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_frame_start).count();
         last_frame_start = now;
         time += dt;
-        
 
         // update balls positions
         balls.update_positions(time);
 
         // compute function using compute shader
-        T.compute(balls);
+        field.compute(balls);
 
         // bind resulting texture
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_3D, T.texture);
+        glBindTexture(GL_TEXTURE_3D, field.texture);
+
+        
         
         glDisable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
