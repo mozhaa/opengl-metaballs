@@ -8,7 +8,6 @@
 #include <glm/mat4x4.hpp>
 
 const int n_balls = 10;
-const int grid_size = 16;
 
 /**
  * Struct, that represents collection of <n_balls> metaballs
@@ -25,14 +24,4 @@ struct metaballs_collection {
 
     metaballs_collection();
     void update_positions(float time);
-};
-
-/**
- * GL Texture, that contains computed values of total metaballs function
- */
-struct metaballs_texture {
-    GLuint program, texture;
-
-    metaballs_texture();
-    void compute(metaballs_collection& scene);
 };

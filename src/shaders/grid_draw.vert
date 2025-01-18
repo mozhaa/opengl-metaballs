@@ -1,7 +1,26 @@
 #version 330 core
 
-layout (location = 0) in vec3 in_position;
+uniform int grid_size;
+
+int N = grid_size - 1;
+
+out int tetrahydron_type;
+out int id0;
+out int id1;
+out int id2;
 
 void main() {
-    gl_Position = vec4(in_position, 1.0);
+    int vid = gl_VertexID;
+    
+    tetrahydron_type = vid % 6;
+    vid /= 6;
+
+    id2 = vid % N;
+    vid /= N;
+
+    id1 = vid % N;
+    vid /= N;
+
+    id0 = vid % N;
+    vid /= N;
 }

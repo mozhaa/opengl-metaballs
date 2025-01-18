@@ -28,6 +28,7 @@ INITIALIZE_EASYLOGGINGPP
 #include "shaderload.h"
 
 #include "metaball.hpp"
+#include "field.hpp"
 #include "grid3d.hpp"
 #include "camera.hpp"
 
@@ -106,7 +107,7 @@ int main(int argc, char *argv[]) try {
     glClearColor(0.8f, 0.8f, 1.f, 0.f);
 
     metaballs_collection balls;
-    metaballs_texture field;
+    scalar_field_texture field;
     grid3d grid(grid_size);
     camera_settings camera(width, height);
     float target_value = 0.5f;

@@ -6,12 +6,11 @@
 #include <glm/vec3.hpp>
 
 #include "metaball.hpp"
+#include "field.hpp"
 #include "camera.hpp"
 
 struct grid3d {
     int grid_size;
-
-    std::vector<glm::vec3> vertices;
 
     GLuint VAO, VBO, program;
 
@@ -19,6 +18,6 @@ struct grid3d {
     float scale;
 
     grid3d(int grid_size);
-    void draw(metaballs_texture &field, camera_settings& camera, float target_value);
+    void draw(scalar_field_texture &field, camera_settings& camera, float target_value);
     void update();
 };

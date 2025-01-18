@@ -1,7 +1,7 @@
 #version 330 core
 
 layout (points) in;
-layout (triangle_strip, max_vertices = 90) out;
+layout (triangle_strip, max_vertices = 4) out;
 
 uniform sampler3D field;
 uniform int grid_size;
@@ -10,6 +10,11 @@ uniform float target_value;
 uniform mat4 view;
 uniform mat4 model;
 uniform mat4 projection;
+
+in int tetrahydron_type[];
+in int id0[];
+in int id1[];
+in int id2[];
 
 out vec3 color;
 
@@ -39,12 +44,9 @@ void process1000(V p1, V n1, V n2, V n3) {
 
 void process1100(V p1, V p2, V n1, V n2) {
     emit_on_edge(p1, n1);
-    emit_on_edge(p2, n2);
-    emit_on_edge(p1, n2);
-    EndPrimitive();
-    emit_on_edge(p2, n2);
-    emit_on_edge(p1, n1);
     emit_on_edge(p2, n1);
+    emit_on_edge(p1, n2);
+    emit_on_edge(p2, n2);
     EndPrimitive();
 }
 
@@ -72,14 +74,14 @@ void process_tetrahedron(vec3 va, vec3 vb, vec3 vc, vec3 vd) {
     V D = from_cube_vertex(vd);
 
     // f.e. 0011 -- A,B - negative, C,D - positive
-    int tetrahydron_type = (
+    int vertices_positivity = (
         (1 << 0) * int(D.texvalue.w > 0) +
         (1 << 1) * int(C.texvalue.w > 0) +
         (1 << 2) * int(B.texvalue.w > 0) +
         (1 << 3) * int(A.texvalue.w > 0)
     );
 
-    switch (tetrahydron_type) {
+    switch (vertices_positivity) {
     // all process####(X1, X2, X3, X4) have (X1, X2, X3, X4) in correct orientation
     case 0:
         // process0000(A, B, C, D);
@@ -132,80 +134,63 @@ void process_tetrahedron(vec3 va, vec3 vb, vec3 vc, vec3 vd) {
     }
 }
 
-void process_cube(vec3 p000, vec3 p001, vec3 p010, vec3 p011, vec3 p100, vec3 p101, vec3 p110, vec3 p111) {
-    // all tetrahydra have the same orientation 
-    process_tetrahedron(p000, p111, p110, p100);
-    process_tetrahedron(p000, p111, p100, p101);
-    process_tetrahedron(p000, p111, p101, p001);
-    process_tetrahedron(p000, p111, p001, p011);
-    process_tetrahedron(p000, p111, p011, p010);
-    process_tetrahedron(p000, p111, p010, p110);
-}
-
-// void draw_line(vec3 a, vec3 b, vec3 line_color, float line_width) {
-//     vec4 at = transform(a);
-//     vec4 bt = transform(b);
-//     vec4 dir = at - bt;
-//     vec4 ortho = normalize(vec4(-dir.y, dir.x, 0.0, 0.0)) * line_width;
-
-//     color = line_color;
-//     gl_Position = at + ortho;
-//     EmitVertex();
-
-//     color = line_color;
-//     gl_Position = at - ortho;
-//     EmitVertex();
-
-//     color = line_color;
-//     gl_Position = bt - ortho;
-//     EmitVertex();
-
-//     EndPrimitive();
-
-//     color = line_color;
-//     gl_Position = at + ortho;
-//     EmitVertex();
-
-//     color = line_color;
-//     gl_Position = bt - ortho;
-//     EmitVertex();
-
-//     color = line_color;
-//     gl_Position = bt + ortho;
-//     EmitVertex();
-    
-//     EndPrimitive();
-// }
-
-// void draw_cube(vec3 p000, vec3 p001, vec3 p010, vec3 p011, vec3 p100, vec3 p101, vec3 p110, vec3 p111) {
-//     draw_line(p000, p001, vec3(1.0, 0.0, 0.0), 0.01);
-//     draw_line(p011, p001, vec3(1.0, 0.0, 0.0), 0.01);
-//     draw_line(p011, p010, vec3(1.0, 0.0, 0.0), 0.01);
-//     draw_line(p000, p010, vec3(1.0, 0.0, 0.0), 0.01);
-//     draw_line(p000, p100, vec3(1.0, 0.0, 0.0), 0.01);
-//     draw_line(p110, p100, vec3(1.0, 0.0, 0.0), 0.01);
-//     draw_line(p110, p010, vec3(1.0, 0.0, 0.0), 0.01);
-//     draw_line(p110, p111, vec3(1.0, 0.0, 0.0), 0.01);
-//     draw_line(p101, p111, vec3(1.0, 0.0, 0.0), 0.01);
-//     draw_line(p101, p001, vec3(1.0, 0.0, 0.0), 0.01);
-//     draw_line(p101, p100, vec3(1.0, 0.0, 0.0), 0.01);
-//     draw_line(p011, p111, vec3(1.0, 0.0, 0.0), 0.01);
-
-//     draw_line(p001, p110, vec3(0.2, 0.0, 1.0), 0.007);
-// }
 
 void main() {   
-    vec3 v0 = gl_in[0].gl_Position.xyz; 
-    vec3 v1 = v0 + vec3(1.0 / grid_size); 
+    float x0 = (float(id0[0]) + 0.5) / grid_size;
+    float x1 = (float(id0[0]) + 1.5) / grid_size;
+    float y0 = (float(id1[0]) + 0.5) / grid_size;
+    float y1 = (float(id1[0]) + 1.5) / grid_size;
+    float z0 = (float(id2[0]) + 0.5) / grid_size;
+    float z1 = (float(id2[0]) + 1.5) / grid_size;
 
-    process_cube(
-        vec3(v0.x, v0.y, v0.z),
-        vec3(v0.x, v0.y, v1.z),
-        vec3(v0.x, v1.y, v0.z),
-        vec3(v0.x, v1.y, v1.z),
-        vec3(v1.x, v0.y, v0.z),
-        vec3(v1.x, v0.y, v1.z),
-        vec3(v1.x, v1.y, v0.z),
-        vec3(v1.x, v1.y, v1.z)
-    );
+    switch (tetrahydron_type[0]) {
+    case 0:
+        process_tetrahedron(
+            vec3(x0, y0, z0),
+            vec3(x1, y1, z1),
+            vec3(x1, y1, z0),
+            vec3(x1, y0, z0)
+        );
+        break;
+    case 1:
+        process_tetrahedron(
+            vec3(x0, y0, z0),
+            vec3(x1, y1, z1),
+            vec3(x1, y0, z0),
+            vec3(x1, y0, z1)
+        );
+        break;
+    case 2:
+        process_tetrahedron(
+            vec3(x0, y0, z0),
+            vec3(x1, y1, z1),
+            vec3(x1, y0, z1),
+            vec3(x0, y0, z1)
+        );
+        break;
+    case 3:
+        process_tetrahedron(
+            vec3(x0, y0, z0),
+            vec3(x1, y1, z1),
+            vec3(x0, y0, z1),
+            vec3(x0, y1, z1)
+        );
+        break;
+    case 4:
+        process_tetrahedron(
+            vec3(x0, y0, z0),
+            vec3(x1, y1, z1),
+            vec3(x0, y1, z1),
+            vec3(x0, y1, z0)
+        );
+        break;
+    case 5:
+        process_tetrahedron(
+            vec3(x0, y0, z0),
+            vec3(x1, y1, z1),
+            vec3(x0, y1, z0),
+            vec3(x1, y1, z0)
+        );
+        break;
+    }
 }  
