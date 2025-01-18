@@ -1,5 +1,8 @@
 BasedOnStyle: LLVM
 IndentWidth: 4
-ColumnLimit: 120
+ColumnLimit: 140
 BreakTemplateDeclarations: Yes
 UseTab: Never
+BinPackArguments: false
+BinPackParameters: false
+PackConstructorInitializers: CurrentLine
