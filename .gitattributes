@@ -1,3 +1,7 @@
 glm/** linguist-vendored
+include/stb_image.h linguist-vendored
+include/stb_image_write.h linguist-vendored
+include/easylogging++.h linguist-vendored
+utils/glob.hpp linguist-vendored
 cmake/** linguist-vendored
 *.frag linguist-language=GLSL
