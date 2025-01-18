@@ -6,7 +6,7 @@
 
 namespace metaballs {
 
-grid3d::grid3d(int grid_size) : grid_size(grid_size), model(1.f), scale(1.f) {
+grid3d::grid3d(int grid_size) : grid_size(grid_size) {
     program = create_program({
         std::string(SHADERS_DIR) + "/grid_draw.vert",
         std::string(SHADERS_DIR) + "/grid_draw.geom",
@@ -15,6 +15,10 @@ grid3d::grid3d(int grid_size) : grid_size(grid_size), model(1.f), scale(1.f) {
 
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
+
+    // model = glm::translate(glm::scale(glm::mat4(1.f), glm::vec3(2.f)), glm::vec3(-1.f));
+    // model = glm::mat4(1.f);
+    model = glm::translate(glm::scale(glm::mat4(1.f), glm::vec3(2.f)), glm::vec3(-0.5f));
 }
 
 void grid3d::draw(scalar_field_texture &field, camera_settings &camera, float target_value) {
@@ -38,10 +42,6 @@ void grid3d::draw(scalar_field_texture &field, camera_settings &camera, float ta
     glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, reinterpret_cast<float *>(&camera.projection));
 
     glDrawArrays(GL_POINTS, 0, (grid_size - 1) * (grid_size - 1) * (grid_size - 1) * 6);
-}
-
-void grid3d::update() {
-    model = glm::mat4(scale);
 }
 
 } // namespace metaballs

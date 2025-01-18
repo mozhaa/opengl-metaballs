@@ -11,8 +11,8 @@ camera_settings::camera_settings(int width, int height)
       base_speed(0.5f),
       speed(0.5f),
       rotation_speed(1.f),
-      camera_direction({ glm::pi<float>() / 2, 0.2f }),
-      camera_position({ -1.f, 0.f, 0.f }),
+      camera_direction({ glm::pi<float>() / 2, 0.f }),
+      camera_position({ -2.f, 0.f, 0.f }),
       near(0.01f),
       far(10.f) {
     update_matrices();

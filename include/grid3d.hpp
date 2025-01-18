@@ -17,11 +17,9 @@ struct grid3d {
     GLuint VAO, VBO, program;
 
     glm::mat4 model;
-    float scale;
 
     grid3d(int grid_size);
     void draw(scalar_field_texture &field, camera_settings& camera, float target_value);
-    void update();
 };
 
 } // namespace metaballs
