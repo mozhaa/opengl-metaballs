@@ -31,11 +31,17 @@ void grid3d::draw(scalar_field_texture &field, camera_settings &camera, float ta
     glBindVertexArray(VAO);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_3D, field.texture);
+    glBindTexture(GL_TEXTURE_3D, field.values);
 
-    glUniform1i(glGetUniformLocation(program, "field"), 0);
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_3D, field.normals);
+
+    glUniform1i(glGetUniformLocation(program, "field_values"), 0);
+    glUniform1i(glGetUniformLocation(program, "field_normals"), 1);
     glUniform1i(glGetUniformLocation(program, "grid_size"), grid_size);
     glUniform1f(glGetUniformLocation(program, "target_value"), target_value);
+
+    glUniform3fv(glGetUniformLocation(program, "camera_position"), 1, reinterpret_cast<float *>(&camera.camera_position));
     
     glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GL_FALSE, reinterpret_cast<float *>(&camera.view));
     glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, reinterpret_cast<float *>(&model));

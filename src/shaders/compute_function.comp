@@ -1,7 +1,8 @@
 #version 430 core
 
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-layout (rgba32f, binding = 0) uniform image3D image;
+layout (rgba32f, binding = 0) uniform image3D result_values;
+layout (rgba32f, binding = 1) uniform image3D result_normals;
 
 #define n_balls 10
 
@@ -9,37 +10,34 @@ uniform vec3 positions[n_balls];
 uniform vec3 colors[n_balls];
 uniform float radiuses[n_balls];
 
-float ball_value(int i, vec3 point) { 
-    return exp(-length(point - positions[i]) / radiuses[i]); 
-}
+void main() {
+    ivec3 texel_index = ivec3(gl_GlobalInvocationID.xyz);
+    ivec3 grid_size = imageSize(result_values);
+    vec3 point = vec3(
+        2.0 * texel_index.x / grid_size.x - 1, 
+        2.0 * texel_index.y / grid_size.y - 1, 
+        2.0 * texel_index.z / grid_size.z - 1
+    );
 
-vec4 compute(vec3 point) {
-    vec4 result = vec4(0.0, 0.0, 0.0, 0.0);
-    
     float values[n_balls];
+    vec4 result_value = vec4(0.0);
+    vec4 result_normal = vec4(0.0);
+
     for (int i = 0; i < n_balls; ++i) {
-        values[i] = ball_value(i, point);
-        result.w += ball_value(i, point);
+        float dist = length(point - positions[i]);
+
+        // function value
+        values[i] = exp(-dist / radiuses[i]);
+        result_value.w += values[i];
+        
+        // function gradient (= normal)
+        vec3 grad = (point - positions[i]) * values[i] / (radiuses[i] * dist);
+        result_normal += vec4(grad, 0.0);
     }
 
     for (int i = 0; i < n_balls; ++i)
-        result.xyz += colors[i] * (values[i] / result.w);
+        result_value.xyz += colors[i] * (values[i] / result_value.w);
     
-    return result;
-}
-
-vec3 index_to_point(ivec3 index) {
-    ivec3 grid_size = imageSize(image);
-    return vec3(
-        2.0 * index.x / grid_size.x - 1, 
-        2.0 * index.y / grid_size.y - 1, 
-        2.0 * index.z / grid_size.z - 1
-    );
-}
-
-void main() {
-    ivec3 texel_index = ivec3(gl_GlobalInvocationID.xyz);
-    vec3 point = index_to_point(texel_index);
-    vec4 result = compute(point);
-    imageStore(image, texel_index, result);
+    imageStore(result_values, texel_index, result_value);
+    imageStore(result_normals, texel_index, result_normal);
 }

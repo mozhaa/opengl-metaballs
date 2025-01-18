@@ -10,7 +10,7 @@ const int grid_size = 64;
  * GL Texture, that contains computed values of total metaballs function
  */
 struct scalar_field_texture {
-    GLuint program, texture;
+    GLuint program, values, normals;
 
     scalar_field_texture();
     void compute(metaballs_collection& scene);
