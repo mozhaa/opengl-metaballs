@@ -20,6 +20,10 @@ struct metaballs_collection {
     float radiuses[n_balls];
 
     // motion parameters
+    glm::vec3 scale[n_balls];
+    glm::vec3 time_shift[n_balls];
+    glm::vec3 shift[n_balls];
+
     glm::vec2 orbit_scales[n_balls];
     glm::mat4 rotations[n_balls];
     float angular_velocities[n_balls];
