@@ -11,8 +11,30 @@
 #include <glm/mat4x4.hpp>
 
 #include "shaderload.h"
+#include "hsv2rgb.hpp"
 
 namespace metaballs {
+
+template <class rng>
+float sample_in_range(rng& r, std::mt19937& e2, float m, float M) {
+    float result;
+    do {
+        result = r(e2);
+    } while (result > M || result < m);
+    return result;
+}
+
+glm::vec3 random_color(std::mt19937& e2) {
+    std::normal_distribution<> h(0.f, 60.f);
+    std::normal_distribution<> s(0.9f, 0.1f);
+    std::normal_distribution<> v(0.9f, 0.3f);
+
+    return HSVtoRGB({
+        fmod(h(e2) + 360.f, 360.f),
+        sample_in_range(s, e2, 0.f, 1.f),
+        sample_in_range(v, e2, 0.f, 1.f)
+    });
+}
 
 metaballs_collection::metaballs_collection() {
     std::random_device rd;
@@ -20,19 +42,15 @@ metaballs_collection::metaballs_collection() {
     std::uniform_real_distribution<> dist_positive(0.f, 1.f);
     std::uniform_real_distribution<> dist_symmetrical(-1.f, 1.f);
 
-    glm::vec3 mix_color = {1.f, 0.9f, 0.9f};
-    float mix_color_coeff = 0.2;
-
     for (int i = 0; i < n_balls; ++i) {
         radiuses[i] = dist_positive(e2) * 0.1f + 0.1f;
-        colors[i] = glm::vec3{dist_positive(e2), dist_positive(e2), dist_positive(e2)};
-        colors[i] = colors[i] * (1 - mix_color_coeff) + mix_color * mix_color_coeff;
+        colors[i] = random_color(e2);
 
         scale[i] = glm::vec3(dist_positive(e2), dist_positive(e2), dist_positive(e2)) * 0.4f;
         shift[i] = glm::vec3(dist_symmetrical(e2), dist_symmetrical(e2), dist_symmetrical(e2)) * (1.f - 2.f * (2.f * scale[i] + radiuses[i] * 3)) * 0.6f;
         time_shift[i] = glm::vec3(dist_positive(e2), dist_positive(e2), dist_positive(e2)) * (float)M_PI;
 
-        angular_velocities[i] = sqrt(dist_positive(e2)) * 4.f;
+        angular_velocities[i] = sqrt(dist_positive(e2)) * 2.f;
     }
 
     update_positions(0);
