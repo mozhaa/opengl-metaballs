@@ -32,6 +32,7 @@ INITIALIZE_EASYLOGGINGPP
 #include "grid3d.hpp"
 #include "camera.hpp"
 #include "envmap.hpp"
+#include "box_drawer.hpp"
 
 using namespace metaballs;
 
@@ -114,6 +115,7 @@ int main(int argc, char *argv[]) try {
     grid3d grid(grid_size);
     camera_settings camera(width, height);
     environment_map envmap;
+    box_drawer box({-1.f, -1.f, -1.f}, {1.f, 1.f, 1.f});
     float target_value = 0.5f;
     float d_target_value = 0.25f;
 
@@ -180,6 +182,9 @@ int main(int argc, char *argv[]) try {
 
         // draw environment map
         envmap.draw(camera);
+
+        // draw white box
+        box.draw(camera, grid.model);
 
         // draw grid
         grid.draw(field, camera, target_value);
