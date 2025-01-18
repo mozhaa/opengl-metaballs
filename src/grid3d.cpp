@@ -16,7 +16,7 @@ grid3d::grid3d(int grid_size) : grid_size(grid_size) {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
-    model = glm::translate(glm::scale(glm::mat4(1.f), glm::vec3(5.f)), glm::vec3(-0.5f));
+    model = glm::translate(glm::scale(glm::mat4(1.f), glm::vec3(2.f)), glm::vec3(-0.5f));
 }
 
 void grid3d::draw(scalar_field_texture &field, camera_settings &camera, float target_value) {

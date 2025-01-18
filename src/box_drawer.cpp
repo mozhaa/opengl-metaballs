@@ -62,7 +62,7 @@ box_drawer::box_drawer(glm::vec3 a, glm::vec3 b) {
 void box_drawer::draw(camera_settings& camera, glm::mat4& model) {
     glUseProgram(program);
     
-    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
     glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GL_FALSE, reinterpret_cast<float *>(&camera.view));
     glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, reinterpret_cast<float *>(&model));
