@@ -12,6 +12,8 @@
 #define GLM_FORCE_SWIZZLE
 #include <glm/mat4x4.hpp>
 
+namespace metaballs {
+
 struct camera_settings {
     glm::mat4 view;
     glm::mat4 projection;
@@ -33,3 +35,5 @@ struct camera_settings {
 private:
     void update_matrices();
 };
+
+} // namespace metaballs

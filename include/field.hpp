@@ -2,6 +2,8 @@
 
 #include "metaball.hpp"
 
+namespace metaballs {
+
 const int grid_size = 64;
 
 /**
@@ -13,3 +15,5 @@ struct scalar_field_texture {
     scalar_field_texture();
     void compute(metaballs_collection& scene);
 };
+
+} // namespace metaballs

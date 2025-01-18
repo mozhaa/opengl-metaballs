@@ -12,6 +12,8 @@
 
 #include "shaderload.h"
 
+namespace metaballs {
+
 metaballs_collection::metaballs_collection() {
     std::random_device rd;
     std::mt19937 e2(rd());
@@ -37,3 +39,5 @@ void metaballs_collection::update_positions(float time) {
         positions[i] = rotations[i] * planar;
     }
 }
+
+} // namespace metaballs

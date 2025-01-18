@@ -2,6 +2,8 @@
 
 #include "shaderload.h"
 
+ namespace metaballs {
+
 scalar_field_texture::scalar_field_texture() {
     program = create_program({std::string(SHADERS_DIR) + "/compute_function.comp"});
 
@@ -36,3 +38,6 @@ void scalar_field_texture::compute(metaballs_collection &balls) {
     glDispatchCompute(grid_size, grid_size, grid_size);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 }
+
+ } // namespace metaballs
+ 

@@ -32,6 +32,8 @@ INITIALIZE_EASYLOGGINGPP
 #include "grid3d.hpp"
 #include "camera.hpp"
 
+using namespace metaballs;
+
 std::string to_string(std::string_view str) { return std::string(str.begin(), str.end()); }
 
 void sdl2_fail(std::string_view message) { throw std::runtime_error(to_string(message) + SDL_GetError()); }

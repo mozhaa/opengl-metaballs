@@ -4,6 +4,8 @@
 
 #include "shaderload.h"
 
+namespace metaballs {
+
 grid3d::grid3d(int grid_size) : grid_size(grid_size), model(1.f), scale(1.f) {
     program = create_program({
         std::string(SHADERS_DIR) + "/grid_draw.vert",
@@ -41,3 +43,5 @@ void grid3d::draw(scalar_field_texture &field, camera_settings &camera, float ta
 void grid3d::update() {
     model = glm::mat4(scale);
 }
+
+} // namespace metaballs

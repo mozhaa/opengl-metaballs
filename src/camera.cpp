@@ -3,6 +3,8 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
+namespace metaballs {
+
 camera_settings::camera_settings(int width, int height)
     : width(width),
       height(height),
@@ -71,3 +73,5 @@ void camera_settings::update_matrices() {
 
     projection = glm::perspective(glm::pi<float>() / 2.f, (1.f * width) / height, near, far);
 }
+
+} // namespace metaballs

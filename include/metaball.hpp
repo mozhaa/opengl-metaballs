@@ -7,6 +7,8 @@
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
 
+namespace metaballs {
+
 const int n_balls = 10;
 
 /**
@@ -25,3 +27,5 @@ struct metaballs_collection {
     metaballs_collection();
     void update_positions(float time);
 };
+
+} // namespace metaballs

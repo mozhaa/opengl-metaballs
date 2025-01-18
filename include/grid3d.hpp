@@ -9,6 +9,8 @@
 #include "field.hpp"
 #include "camera.hpp"
 
+namespace metaballs {
+
 struct grid3d {
     int grid_size;
 
@@ -21,3 +23,5 @@ struct grid3d {
     void draw(scalar_field_texture &field, camera_settings& camera, float target_value);
     void update();
 };
+
+} // namespace metaballs
