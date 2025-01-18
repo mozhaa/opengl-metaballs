@@ -99,14 +99,6 @@ int main(int argc, char *argv[]) try {
     SDL_GetWindowSize(window, &width, &height);
     glViewport(0, 0, width, height);
 
-    const std::string project_root = PROJECT_ROOT;
-    const std::string shaders_dir = SHADERS_DIR;
-
-    auto program = create_program({
-        shaders_dir + "/2dtexture_view.vert",
-        shaders_dir + "/2dtexture_view.frag",
-    });
-
     auto last_frame_start = std::chrono::high_resolution_clock::now();
     float time = 0.f;
     std::map<SDL_Keycode, bool> button_down;
@@ -117,6 +109,8 @@ int main(int argc, char *argv[]) try {
     metaballs_texture field;
     grid3d grid(grid_size);
     camera_settings camera(width, height);
+    float target_value = 0.5f;
+    float d_target_value = 0.25f;
 
     GLuint VAO;
     glGenVertexArrays(1, &VAO);
@@ -157,53 +151,28 @@ int main(int argc, char *argv[]) try {
         auto now = std::chrono::high_resolution_clock::now();
         float dt = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_frame_start).count();
         last_frame_start = now;
-        if (!paused)
+        if (!paused) {
             time += dt;
 
-        if (button_down[SDLK_UP]) {
-            camera.camera_distance -= 1.f * dt;
-            camera.update();
-        }
-        if (button_down[SDLK_DOWN]) {
-            camera.camera_distance += 1.f * dt;
-            camera.update();
+            // update balls positions
+            balls.update_positions(time);
+
+            // compute function using compute shader
+            field.compute(balls);
         }
 
-        if (button_down[SDLK_LEFT]) {
-            camera.view_azimuth -= 2.f * dt;
-            camera.update();
-        }
-        if (button_down[SDLK_RIGHT]) {
-            camera.view_azimuth += 2.f * dt;
-            camera.update();
-        }
-        
-        if (button_down[SDLK_w]) {
-            grid.scale *= std::pow(2.f, dt);
-            grid.update();
-        }
-        if (button_down[SDLK_s]) {
-            grid.scale /= std::pow(2.f, dt);
-            grid.update();
-        }
+        if (button_down[SDLK_RIGHTBRACKET])
+            target_value += d_target_value * dt;
+        if (button_down[SDLK_LEFTBRACKET])
+            target_value -= d_target_value * dt;
 
-        // update balls positions
-        balls.update_positions(time);
+        // update camera based on pressed keys
+        camera.update(button_down, dt);
 
-        // compute function using compute shader
-        field.compute(balls);
-
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // draw grid
-        grid.draw(field, camera);
-
-        // glUseProgram(program);
-        // glUniform1i(glGetUniformLocation(program, "tex"), 0);
-        // glBindVertexArray(VAO);
-        // glDrawArrays(GL_TRIANGLES, 0, 6);
+        grid.draw(field, camera, target_value);
 
         SDL_GL_SwapWindow(window);
     }

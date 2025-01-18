@@ -19,6 +19,6 @@ struct grid3d {
     float scale;
 
     grid3d(int grid_size);
-    void draw(metaballs_texture &field, camera_settings& camera);
+    void draw(metaballs_texture &field, camera_settings& camera, float target_value);
     void update();
 };

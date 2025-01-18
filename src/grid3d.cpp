@@ -30,8 +30,12 @@ grid3d::grid3d(int grid_size) : grid_size(grid_size), vertices(), model(1.f), sc
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (const void *)(0));
 }
 
-void grid3d::draw(metaballs_texture &field, camera_settings &camera) {
+void grid3d::draw(metaballs_texture &field, camera_settings &camera, float target_value) {
     glUseProgram(program);
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
     glBindVertexArray(VAO);
 
@@ -40,7 +44,7 @@ void grid3d::draw(metaballs_texture &field, camera_settings &camera) {
 
     glUniform1i(glGetUniformLocation(program, "field"), 0);
     glUniform1i(glGetUniformLocation(program, "grid_size"), grid_size);
-    glUniform1f(glGetUniformLocation(program, "target_value"), 0.5f);
+    glUniform1f(glGetUniformLocation(program, "target_value"), target_value);
     
     glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GL_FALSE, reinterpret_cast<float *>(&camera.view));
     glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, reinterpret_cast<float *>(&model));
