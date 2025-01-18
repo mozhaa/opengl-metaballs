@@ -19,9 +19,14 @@ INITIALIZE_EASYLOGGINGPP
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 
+#include <stdio.h>
 #include <chrono>
 #include <cmath>
+#include <ctime>
+
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 #include <stdexcept>
 #include <vector>
 
@@ -33,6 +38,7 @@ INITIALIZE_EASYLOGGINGPP
 #include "camera.hpp"
 #include "envmap.hpp"
 #include "box_drawer.hpp"
+#include "stb_image_write.h"
 
 using namespace metaballs;
 
@@ -122,6 +128,12 @@ int main(int argc, char *argv[]) try {
     GLuint VAO;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
+    int frame_idx = 0;
+
+    std::vector<uint32_t> pixels;
+    bool ffmpeg_process_was_started = false;
+    FILE *ffmpeg_process = NULL; 
+    float ffmpeg_framerate = 60.f;
 
     bool paused = false;
     bool running = true;
@@ -139,6 +151,11 @@ int main(int argc, char *argv[]) try {
                     camera.width = width;
                     camera.height = height;
                     glViewport(0, 0, width, height);
+                    if (ffmpeg_process != NULL) {
+                        LOG(WARNING) << "ffmpeg recording stopped, because window was resized";
+                        pclose(ffmpeg_process);
+                        ffmpeg_process = NULL;
+                    }
                     break;
                 }
                 break;
@@ -147,6 +164,31 @@ int main(int argc, char *argv[]) try {
 
                 if (event.key.keysym.sym == SDLK_SPACE)
                     paused = !paused;
+
+                if (event.key.keysym.sym == SDLK_RETURN) {
+                    if (ffmpeg_process == NULL) {
+                        auto t = std::time(nullptr);
+                        auto tm = *std::localtime(&t);
+                        std::ostringstream output_fp;
+                        output_fp << "\"" << PROJECT_ROOT << "/resources/" << std::put_time(&tm, "%d-%m-%Y %H-%M-%S") << ".mp4\"";
+
+                        std::string command = (
+                            std::string("ffmpeg -y -f rawvideo -video_size ") + 
+                            std::to_string(width) + "x" + std::to_string(height) + 
+                            " -pix_fmt rgb24 -r " + std::to_string(ffmpeg_framerate) + 
+                            " -i - -vf vflip -an -c:v libx264 " + output_fp.str()
+                        );
+                        ffmpeg_process = popen(command.c_str(), "w");
+                        if (!ffmpeg_process)
+                            throw std::runtime_error("Failed to start ffmpeg process.");
+                        pixels.reserve(width * height * 3);
+                        LOG(INFO) << "ffmpeg recording started, output=" << output_fp.str();
+                    } else {
+                        pclose(ffmpeg_process);
+                        ffmpeg_process = NULL;
+                        LOG(INFO) << "ffmpeg recording stopped";
+                    }
+                }
 
                 break;
             case SDL_KEYUP:
@@ -159,6 +201,15 @@ int main(int argc, char *argv[]) try {
 
         auto now = std::chrono::high_resolution_clock::now();
         float dt = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_frame_start).count();
+
+        if (ffmpeg_process != NULL) {
+            // fix framerate
+            dt = 1.f / ffmpeg_framerate;
+
+            // hold right arrow
+            // button_down[SDLK_RIGHT] = true;
+        }
+
         last_frame_start = now;
         if (!paused) {
             time += dt;
@@ -189,8 +240,17 @@ int main(int argc, char *argv[]) try {
         // draw grid
         grid.draw(field, camera, target_value);
 
+        if (ffmpeg_process != NULL) {
+            glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
+            // stbi_write_png((std::to_string(frame_idx) + ".png").c_str(), width, height, 3, pixels.data(), width * 3);
+            fwrite(pixels.data(), width * height * 3, 1, ffmpeg_process);
+        }
+
         SDL_GL_SwapWindow(window);
     }
+
+    if (ffmpeg_process != NULL)
+        pclose(ffmpeg_process);
 
 } catch (std::exception const &e) {
     std::cerr << e.what() << std::endl;

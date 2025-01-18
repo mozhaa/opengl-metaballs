@@ -12,7 +12,7 @@ camera_settings::camera_settings(int width, int height)
       camera_distance(2.f),
       camera_height(0.0f),
       camera_rotation(0.f),
-      horizontal_rotation_speed(0.8f),
+      horizontal_rotation_speed(0.5f),
       vertical_rotation_speed(0.3f),
       near(0.01f),
       far(100.f) {
