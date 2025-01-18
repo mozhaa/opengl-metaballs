@@ -31,6 +31,7 @@ INITIALIZE_EASYLOGGINGPP
 #include "field.hpp"
 #include "grid3d.hpp"
 #include "camera.hpp"
+#include "envmap.hpp"
 
 using namespace metaballs;
 
@@ -112,6 +113,7 @@ int main(int argc, char *argv[]) try {
     scalar_field_texture field;
     grid3d grid(grid_size);
     camera_settings camera(width, height);
+    environment_map envmap;
     float target_value = 0.5f;
     float d_target_value = 0.25f;
 
@@ -173,6 +175,9 @@ int main(int argc, char *argv[]) try {
         camera.update(button_down, dt);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // draw environment map
+        envmap.draw(camera);
 
         // draw grid
         grid.draw(field, camera, target_value);

@@ -72,6 +72,8 @@ void camera_settings::update_matrices() {
     view = glm::lookAt(camera_position, camera_position + direction_vector, up_vector);
 
     projection = glm::perspective(glm::pi<float>() / 2.f, (1.f * width) / height, near, far);
+
+    view_projection_inverse = glm::inverse(projection * view);
 }
 
 } // namespace metaballs

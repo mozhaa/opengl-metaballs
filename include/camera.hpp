@@ -17,6 +17,7 @@ namespace metaballs {
 struct camera_settings {
     glm::mat4 view;
     glm::mat4 projection;
+    glm::mat4 view_projection_inverse;
 
     glm::vec3 camera_position;
     glm::vec2 camera_direction;
