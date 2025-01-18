@@ -1,1 +1,2 @@
-glm/* linguist-vendored
+glm/** linguist-vendored
+cmake/** linguist-vendored
