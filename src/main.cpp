@@ -29,6 +29,7 @@ INITIALIZE_EASYLOGGINGPP
 
 #include "metaball.hpp"
 #include "grid3d.hpp"
+#include "camera.hpp"
 
 std::string to_string(std::string_view str) { return std::string(str.begin(), str.end()); }
 
@@ -115,11 +116,13 @@ int main(int argc, char *argv[]) try {
     metaballs_collection balls;
     metaballs_texture field;
     grid3d grid(grid_size);
+    camera_settings camera(width, height);
 
     GLuint VAO;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
+    bool paused = false;
     bool running = true;
     while (running) {
         for (SDL_Event event; SDL_PollEvent(&event);)
@@ -138,6 +141,10 @@ int main(int argc, char *argv[]) try {
                 break;
             case SDL_KEYDOWN:
                 button_down[event.key.keysym.sym] = true;
+
+                if (event.key.keysym.sym == SDLK_SPACE)
+                    paused = !paused;
+
                 break;
             case SDL_KEYUP:
                 button_down[event.key.keysym.sym] = false;
@@ -150,8 +157,36 @@ int main(int argc, char *argv[]) try {
         auto now = std::chrono::high_resolution_clock::now();
         float dt = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_frame_start).count();
         last_frame_start = now;
-        time += dt;
+        if (!paused)
+            time += dt;
+
+        if (button_down[SDLK_UP]) {
+            camera.camera_distance -= 1.f * dt;
+            camera.update();
+        }
+        if (button_down[SDLK_DOWN]) {
+            camera.camera_distance += 1.f * dt;
+            camera.update();
+        }
+
+        if (button_down[SDLK_LEFT]) {
+            camera.view_azimuth -= 2.f * dt;
+            camera.update();
+        }
+        if (button_down[SDLK_RIGHT]) {
+            camera.view_azimuth += 2.f * dt;
+            camera.update();
+        }
         
+        if (button_down[SDLK_w]) {
+            grid.scale *= std::pow(2.f, dt);
+            grid.update();
+        }
+        if (button_down[SDLK_s]) {
+            grid.scale /= std::pow(2.f, dt);
+            grid.update();
+        }
+
         // update balls positions
         balls.update_positions(time);
 
@@ -163,8 +198,8 @@ int main(int argc, char *argv[]) try {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // draw grid
-        grid.draw(field);
-        
+        grid.draw(field, camera);
+
         // glUseProgram(program);
         // glUniform1i(glGetUniformLocation(program, "tex"), 0);
         // glBindVertexArray(VAO);

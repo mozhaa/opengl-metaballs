@@ -7,6 +7,10 @@ uniform sampler3D field;
 uniform int grid_size;
 uniform float target_value;
 
+uniform mat4 view;
+uniform mat4 model;
+uniform mat4 projection;
+
 out vec3 color;
 
 struct V {
@@ -42,11 +46,15 @@ void process_1100(V va, V vb, V vc, V vd) {
     EndPrimitive();
 }
 
+vec4 transform(vec3 point) {
+    return projection * view * model * vec4(point, 1.0);
+}
+
 void process_tetrahedron(vec3 va, vec3 vb, vec3 vc, vec3 vd) {
-    V A = V(texture(field, va), vec4(va, 1.0));
-    V B = V(texture(field, vb), vec4(vb, 1.0));
-    V C = V(texture(field, vc), vec4(vc, 1.0));
-    V D = V(texture(field, vd), vec4(vd, 1.0));
+    V A = V(texture(field, va), transform(va));
+    V B = V(texture(field, vb), transform(vb));
+    V C = V(texture(field, vc), transform(vc));
+    V D = V(texture(field, vd), transform(vd));
 
     bool a = A.texvalue.w > target_value;
     bool b = B.texvalue.w > target_value;
@@ -114,13 +122,15 @@ void process_tetrahedron(vec3 va, vec3 vb, vec3 vc, vec3 vd) {
     }
 }
 
-void main() {    
-    float x0 = (gl_in[0].gl_Position.x + 0.5) / grid_size;
-    float x1 = (gl_in[0].gl_Position.x + 1.5) / grid_size;
-    float y0 = (gl_in[0].gl_Position.y + 0.5) / grid_size;
-    float y1 = (gl_in[0].gl_Position.y + 1.5) / grid_size;
-    float z0 = (gl_in[0].gl_Position.z + 0.5) / grid_size;
-    float z1 = (gl_in[0].gl_Position.z + 1.5) / grid_size;
+void main() {   
+    vec3 v0 = gl_in[0].gl_Position.xyz; 
+    vec3 v1 = v0 + vec3(1.0 / grid_size); 
+    float x0 = v0.x;
+    float x1 = v1.x;
+    float y0 = v0.y;
+    float y1 = v1.y;
+    float z0 = v0.z;
+    float z1 = v1.z;
 
     vec3 p000 = vec3(x0, y0, z0);
     vec3 p001 = vec3(x0, y0, z1);
