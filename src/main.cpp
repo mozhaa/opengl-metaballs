@@ -134,6 +134,8 @@ int main(int argc, char *argv[]) try {
                 case SDL_WINDOWEVENT_RESIZED:
                     width = event.window.data1;
                     height = event.window.data2;
+                    camera.width = width;
+                    camera.height = height;
                     glViewport(0, 0, width, height);
                     break;
                 }
