@@ -30,13 +30,19 @@ void main() {
         values[i] = exp(-dist / radiuses[i]);
         result_value.w += values[i];
         
+    }
+
+    for (int i = 0; i < n_balls; ++i) {
+        float dist = length(point - positions[i]);
+        float proportion = values[i] / result_value.w;
+        result_value.xyz += colors[i] * proportion;
+
         // function gradient (= normal)
-        vec3 grad = (point - positions[i]) * values[i] / (radiuses[i] * dist);
+        vec3 grad = (point - positions[i]) * proportion / radiuses[i] / dist;
         result_normal += vec4(grad, 0.0);
     }
 
-    for (int i = 0; i < n_balls; ++i)
-        result_value.xyz += colors[i] * (values[i] / result_value.w);
+    result_normal = vec4(normalize(result_normal.xyz), 0.0);
     
     imageStore(result_values, texel_index, result_value);
     imageStore(result_normals, texel_index, result_normal);
