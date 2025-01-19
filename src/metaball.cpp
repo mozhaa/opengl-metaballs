@@ -25,15 +25,17 @@ float sample_in_range(rng& r, std::mt19937& e2, float m, float M) {
 }
 
 glm::vec3 random_color(std::mt19937& e2) {
-    std::normal_distribution<> h(0.f, 50.f);
+    std::normal_distribution<> h(240.f, 40.f);
     std::normal_distribution<> s(0.8f, 0.01f);
     std::normal_distribution<> v(0.9f, 0.01f);
 
-    return HSVtoRGB({
+    glm::vec3 result = HSVtoRGB({
         fmod(h(e2) + 360.f, 360.f),
         sample_in_range(s, e2, 0.f, 1.f),
         sample_in_range(v, e2, 0.f, 1.f)
     });
+
+    return result;
 }
 
 metaballs_collection::metaballs_collection() {
