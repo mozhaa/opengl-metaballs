@@ -20,30 +20,30 @@ void main() {
     );
 
     float values[n_balls];
+    float distances[n_balls];
     vec4 result_value = vec4(0.0);
-    vec4 result_normal = vec4(0.0);
+    vec3 result_normal = vec3(0.0);
 
     for (int i = 0; i < n_balls; ++i) {
-        float dist = length(point - positions[i]);
+        distances[i] = length(point - positions[i]);
 
         // function value
-        values[i] = exp(-dist / radiuses[i]);
+        values[i] = exp(-distances[i] / radiuses[i]);
         result_value.w += values[i];
         
     }
 
     for (int i = 0; i < n_balls; ++i) {
-        float dist = length(point - positions[i]);
         float proportion = values[i] / result_value.w;
+
+        // softmax
         result_value.xyz += colors[i] * proportion;
 
         // function gradient (= normal)
-        vec3 grad = (point - positions[i]) * proportion / radiuses[i] / dist;
-        result_normal += vec4(grad, 0.0);
+        vec3 grad = (point - positions[i]) * proportion / radiuses[i] / distances[i];
+        result_normal += grad;
     }
-
-    result_normal = vec4(normalize(result_normal.xyz), 0.0);
     
     imageStore(result_values, texel_index, result_value);
-    imageStore(result_normals, texel_index, result_normal);
+    imageStore(result_normals, texel_index, vec4(normalize(result_normal), 0.0));
 }
