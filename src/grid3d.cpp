@@ -19,7 +19,7 @@ grid3d::grid3d(int grid_size) : grid_size(grid_size) {
     model = glm::translate(glm::scale(glm::mat4(1.f), glm::vec3(2.f)), glm::vec3(-0.5f));
 }
 
-void grid3d::draw(scalar_field_texture &field, camera_settings &camera, float target_value) {
+void grid3d::draw(scalar_field_texture &field, camera_settings &camera, lighting_settings& lighting, float target_value) {
     glUseProgram(program);
 
     glEnable(GL_DEPTH_TEST);
@@ -44,6 +44,8 @@ void grid3d::draw(scalar_field_texture &field, camera_settings &camera, float ta
     glUniformMatrix4fv(glGetUniformLocation(program, "view"), 1, GL_FALSE, reinterpret_cast<float *>(&camera.view));
     glUniformMatrix4fv(glGetUniformLocation(program, "model"), 1, GL_FALSE, reinterpret_cast<float *>(&model));
     glUniformMatrix4fv(glGetUniformLocation(program, "projection"), 1, GL_FALSE, reinterpret_cast<float *>(&camera.projection));
+
+    lighting.set_uniforms(program);
 
     glDrawArrays(GL_POINTS, 0, (grid_size - 1) * (grid_size - 1) * (grid_size - 1) * 6);
 }

@@ -4,14 +4,14 @@ layout (location = 0) out vec4 out_color;
 
 uniform sampler3D field_normals;
 
-vec3 ambient_strength = vec3(0.4);
-vec3 diffuse_strength = vec3(0.5);
-vec3 specular_strength = vec3(0.7);
+uniform vec3 ambient_strength;
+uniform vec3 diffuse_strength;
+uniform vec3 specular_strength;
 
-float power = 2.0;
+uniform float power;
 
-vec3 sun_direction = vec3(0.0, 1.0, 0.0);
-vec3 sun_color = vec3(0.9, 0.5, 0.8);
+uniform vec3 sun_direction;
+uniform vec3 sun_color;
 
 uniform vec3 camera_position;
 
