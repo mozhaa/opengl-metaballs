@@ -122,7 +122,7 @@ int main(int argc, char *argv[]) try {
     camera_settings camera(width, height);
     environment_map envmap;
     box_drawer box({0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
-    float target_value = 0.5f;
+    float target_value = 0.02f;
     float d_target_value = 0.25f;
 
     GLuint VAO;

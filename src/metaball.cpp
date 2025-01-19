@@ -25,9 +25,9 @@ float sample_in_range(rng& r, std::mt19937& e2, float m, float M) {
 }
 
 glm::vec3 random_color(std::mt19937& e2) {
-    std::normal_distribution<> h(0.f, 60.f);
-    std::normal_distribution<> s(0.9f, 0.1f);
-    std::normal_distribution<> v(0.9f, 0.3f);
+    std::normal_distribution<> h(0.f, 50.f);
+    std::normal_distribution<> s(0.8f, 0.01f);
+    std::normal_distribution<> v(0.9f, 0.01f);
 
     return HSVtoRGB({
         fmod(h(e2) + 360.f, 360.f),
@@ -43,11 +43,11 @@ metaballs_collection::metaballs_collection() {
     std::uniform_real_distribution<> dist_symmetrical(-1.f, 1.f);
 
     for (int i = 0; i < n_balls; ++i) {
-        radiuses[i] = dist_positive(e2) * 0.1f + 0.1f;
+        radiuses[i] = dist_positive(e2) * 0.05f + 0.03f;
         colors[i] = random_color(e2);
 
         scale[i] = glm::vec3(dist_positive(e2), dist_positive(e2), dist_positive(e2)) * 0.4f;
-        shift[i] = glm::vec3(dist_symmetrical(e2), dist_symmetrical(e2), dist_symmetrical(e2)) * (1.f - 2.f * (2.f * scale[i] + radiuses[i] * 3)) * 0.6f;
+        shift[i] = glm::vec3(dist_symmetrical(e2), dist_symmetrical(e2), dist_symmetrical(e2)) * (1.f - 2.f * (2.f * scale[i] + radiuses[i] * 3));
         time_shift[i] = glm::vec3(dist_positive(e2), dist_positive(e2), dist_positive(e2)) * (float)M_PI;
 
         angular_velocities[i] = sqrt(dist_positive(e2)) * 2.f;
