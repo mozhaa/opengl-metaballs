@@ -27,7 +27,7 @@ environment_map::environment_map() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     int width, height, channels;
-    std::string image_path = std::string(PROJECT_ROOT) + "/resources/purple.jpg";
+    std::string image_path = std::string(PROJECT_ROOT) + "/resources/night_sky.jpg";
     auto pixels = stbi_load(image_path.c_str(), &width, &height, &channels, 4);
 
     LOG(INFO) << "Image loaded, width=" << width << ", height=" << height << std::endl;
