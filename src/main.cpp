@@ -18,14 +18,12 @@ INITIALIZE_EASYLOGGINGPP
 #include <glm/gtx/string_cast.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
+#include "stb_image_write.h"
 
-#include <stdio.h>
 #include <chrono>
 #include <cmath>
-#include <ctime>
 
 #include <iostream>
-#include <sstream>
 #include <iomanip>
 #include <stdexcept>
 #include <vector>
@@ -38,7 +36,8 @@ INITIALIZE_EASYLOGGINGPP
 #include "camera.hpp"
 #include "envmap.hpp"
 #include "box_drawer.hpp"
-#include "stb_image_write.h"
+#include "lighting_settings.hpp"
+#include "recording.hpp"
 
 using namespace metaballs;
 
@@ -120,7 +119,31 @@ int main(int argc, char *argv[]) try {
     scalar_field_texture field;
     grid3d grid(grid_size);
     camera_settings camera(width, height);
-    environment_map envmap;
+
+    environment_map envmap1("night_sky.jpg");
+    environment_map envmap2("purple.jpg");
+
+    lighting_settings lighting1 = {
+        glm::vec3(0.2, 0.2, 0.2),
+        glm::vec3(0.6),
+        glm::vec3(0.2),
+        glm::vec3(1.0, 0.7, 0.0),
+        glm::vec3(0.8, 0.8, 1.0),
+        32.0,
+    };
+
+    lighting_settings lighting2 = {
+        glm::vec3(0.2, 0.2, 0.2),
+        glm::vec3(0.6),
+        glm::vec3(0.2),
+        glm::vec3(0.2, -1.0, 0.0),
+        glm::vec3(0.8, 0.8, 1.0),
+        32.0,
+    };
+
+    environment_map& envmap = envmap1;
+    lighting_settings& lighting = lighting1;
+
     box_drawer box({0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
     float target_value = 0.02f;
     float d_target_value = 0.25f;
@@ -130,10 +153,7 @@ int main(int argc, char *argv[]) try {
     glBindVertexArray(VAO);
     int frame_idx = 0;
 
-    std::vector<uint32_t> pixels;
-    bool ffmpeg_process_was_started = false;
-    FILE *ffmpeg_process = NULL; 
-    float ffmpeg_framerate = 60.f;
+    recorder R;
 
     bool paused = false;
     bool running = true;
@@ -146,16 +166,15 @@ int main(int argc, char *argv[]) try {
             case SDL_WINDOWEVENT:
                 switch (event.window.event) {
                 case SDL_WINDOWEVENT_RESIZED:
+                    if ((width != event.window.data1 || height != event.window.data2) && R.is_recording()) {
+                        R.stop_recording();
+                        LOG(WARNING) << "ffmpeg recording stopped, because window was resized";
+                    }
                     width = event.window.data1;
                     height = event.window.data2;
                     camera.width = width;
                     camera.height = height;
                     glViewport(0, 0, width, height);
-                    if (ffmpeg_process != NULL) {
-                        LOG(WARNING) << "ffmpeg recording stopped, because window was resized";
-                        pclose(ffmpeg_process);
-                        ffmpeg_process = NULL;
-                    }
                     break;
                 }
                 break;
@@ -166,28 +185,10 @@ int main(int argc, char *argv[]) try {
                     paused = !paused;
 
                 if (event.key.keysym.sym == SDLK_RETURN) {
-                    if (ffmpeg_process == NULL) {
-                        auto t = std::time(nullptr);
-                        auto tm = *std::localtime(&t);
-                        std::ostringstream output_fp;
-                        output_fp << "\"" << PROJECT_ROOT << "/resources/" << std::put_time(&tm, "%d-%m-%Y %H-%M-%S") << ".mp4\"";
-
-                        std::string command = (
-                            std::string("ffmpeg -y -f rawvideo -video_size ") + 
-                            std::to_string(width) + "x" + std::to_string(height) + 
-                            " -pix_fmt rgb24 -r " + std::to_string(ffmpeg_framerate) + 
-                            " -i - -vf vflip -an -c:v libx264 " + output_fp.str()
-                        );
-                        ffmpeg_process = popen(command.c_str(), "w");
-                        if (!ffmpeg_process)
-                            throw std::runtime_error("Failed to start ffmpeg process.");
-                        pixels.reserve(width * height * 3);
-                        LOG(INFO) << "ffmpeg recording started, output=" << output_fp.str();
-                    } else {
-                        pclose(ffmpeg_process);
-                        ffmpeg_process = NULL;
-                        LOG(INFO) << "ffmpeg recording stopped";
-                    }
+                    if (R.is_recording())
+                        R.stop_recording();
+                    else
+                        R.start_recording(width, height);
                 }
 
                 break;
@@ -202,12 +203,16 @@ int main(int argc, char *argv[]) try {
         auto now = std::chrono::high_resolution_clock::now();
         float dt = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_frame_start).count();
 
-        if (ffmpeg_process != NULL) {
-            // fix framerate
-            dt = 1.f / ffmpeg_framerate;
+        // automatically start recording on start
+        if (!R.is_recording())
+            R.start_recording(width, height);
 
-            // hold right arrow
-            // button_down[SDLK_RIGHT] = true;
+        if (R.is_recording()) {
+            // fix framerate for recording
+            dt = 1.f / R.fps;
+
+            // hold right arrow for recording
+            button_down[SDLK_RIGHT] = true;
         }
 
         last_frame_start = now;
@@ -229,6 +234,12 @@ int main(int argc, char *argv[]) try {
         // update camera based on pressed keys
         camera.update(button_down, dt);
 
+        // automatically change envmap and lighting for recording
+        if (frame_idx > (M_2_PI / camera.horizontal_rotation_speed) * R.fps) {
+            envmap = envmap2;
+            lighting = lighting2;
+        }
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // draw environment map
@@ -238,19 +249,17 @@ int main(int argc, char *argv[]) try {
         box.draw(camera, grid.model);
 
         // draw grid
-        grid.draw(field, camera, target_value);
+        grid.draw(field, camera, lighting, target_value);
 
-        if (ffmpeg_process != NULL) {
-            glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
-            // stbi_write_png((std::to_string(frame_idx) + ".png").c_str(), width, height, 3, pixels.data(), width * 3);
-            fwrite(pixels.data(), width * height * 3, 1, ffmpeg_process);
-        }
+        if (R.is_recording())
+            R.save_frame();
 
+        ++frame_idx;
         SDL_GL_SwapWindow(window);
     }
 
-    if (ffmpeg_process != NULL)
-        pclose(ffmpeg_process);
+    if (R.is_recording())
+        R.stop_recording();
 
 } catch (std::exception const &e) {
     std::cerr << e.what() << std::endl;
