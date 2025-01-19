@@ -4,7 +4,6 @@ layout (points) in;
 layout (triangle_strip, max_vertices = 4) out;
 
 uniform sampler3D field_values;
-uniform sampler3D field_normals;
 uniform int grid_size;
 uniform float target_value;
 
@@ -18,13 +17,13 @@ in int id1[];
 in int id2[];
 
 out vec4 color;
-out vec3 normal;
 out vec3 position;
+out vec3 texcoord;
 
 struct V {
     vec4 texvalue;
     vec4 position;
-    vec3 normal;
+    vec3 texcoord;
 };
 
 void emit_on_edge(V vx, V vy) {
@@ -33,9 +32,9 @@ void emit_on_edge(V vx, V vy) {
     float s = x + y;
     
     color = (vx.texvalue * y + vy.texvalue * x) / s;
-    normal = (vx.normal * y + vy.normal * x) / s;
     gl_Position = (vx.position * y + vy.position * x) / s;
     position = gl_Position.xyz;
+    texcoord = (vx.texcoord * y + vy.texcoord * x) / s;
     EmitVertex();
 }
 
@@ -68,7 +67,7 @@ vec4 as_actual_point(vec3 point) {
 }
 
 V from_cube_vertex(vec3 v) {
-    V result = V(texture(field_values, v), as_actual_point(v), texture(field_normals, v).xyz);
+    V result = V(texture(field_values, v), as_actual_point(v), v);
     result.texvalue.w -= target_value;
     return result;
 }
