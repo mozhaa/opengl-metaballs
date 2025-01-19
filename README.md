@@ -1,7 +1,5 @@
 # OpenGL Metaballs
 
-
-
-<video controls src="https://github.com/mozhaa/opengl-metaballs/blob/metaballs/resources/19-01-2025%2012-39-54.mp4" title="Demo"></video>
+<video controls src="https://github.com/user-attachments/assets/3eada985-1e59-45d3-95d7-43275461a699" title="Demo"></video>
 
 #### Assignment PDF: [assignment.pdf](assignment.pdf)
