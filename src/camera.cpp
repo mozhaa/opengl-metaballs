@@ -8,8 +8,8 @@ namespace metaballs {
 camera_settings::camera_settings(int width, int height)
     : width(width),
       height(height),
-      view_angle(0.0f),
-      camera_distance(2.f),
+      view_angle(0.1f),
+      camera_distance(1.4f),
       camera_height(0.0f),
       camera_rotation(0.f),
       horizontal_rotation_speed(0.5f),

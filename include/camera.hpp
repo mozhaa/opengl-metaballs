@@ -19,10 +19,10 @@ struct camera_settings {
     glm::mat4 projection;
     glm::mat4 view_projection_inverse;
 
-    float view_angle = 0.8f;
-    float camera_distance = 18.f;
-    float camera_height = 0.5f;
-    float camera_rotation = 0.f;
+    float view_angle;
+    float camera_distance;
+    float camera_height;
+    float camera_rotation;
     glm::vec3 camera_position;
     
     float horizontal_rotation_speed;

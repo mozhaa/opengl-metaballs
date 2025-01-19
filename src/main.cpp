@@ -124,21 +124,21 @@ int main(int argc, char *argv[]) try {
     environment_map envmap2("purple.jpg");
 
     lighting_settings lighting1 = {
-        glm::vec3(0.2, 0.2, 0.2),
+        glm::vec3(0.3),
         glm::vec3(0.6),
         glm::vec3(0.2),
         glm::vec3(1.0, 0.7, 0.0),
         glm::vec3(0.8, 0.8, 1.0),
-        32.0,
+        4.0,
     };
 
     lighting_settings lighting2 = {
-        glm::vec3(0.2, 0.2, 0.2),
-        glm::vec3(0.6),
         glm::vec3(0.2),
-        glm::vec3(0.2, -1.0, 0.0),
-        glm::vec3(0.8, 0.8, 1.0),
-        32.0,
+        glm::vec3(0.9),
+        glm::vec3(0.4),
+        glm::vec3(-1.0, 0.0, 0.6),
+        glm::vec3(1.0, 0.3, 0.5),
+        16.0,
     };
 
     environment_map& envmap = envmap1;
@@ -154,6 +154,7 @@ int main(int argc, char *argv[]) try {
     int frame_idx = 0;
 
     recorder R;
+    bool auto_recording = true;
 
     bool paused = false;
     bool running = true;
@@ -187,8 +188,10 @@ int main(int argc, char *argv[]) try {
                 if (event.key.keysym.sym == SDLK_RETURN) {
                     if (R.is_recording())
                         R.stop_recording();
-                    else
+                    else {
                         R.start_recording(width, height);
+                        frame_idx = 0;
+                    }
                 }
 
                 break;
@@ -204,7 +207,7 @@ int main(int argc, char *argv[]) try {
         float dt = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_frame_start).count();
 
         // automatically start recording on start
-        if (!R.is_recording())
+        if (auto_recording && !R.is_recording())
             R.start_recording(width, height);
 
         if (R.is_recording()) {
@@ -212,7 +215,8 @@ int main(int argc, char *argv[]) try {
             dt = 1.f / R.fps;
 
             // hold right arrow for recording
-            button_down[SDLK_RIGHT] = true;
+            if (auto_recording)
+                button_down[SDLK_RIGHT] = true;
         }
 
         last_frame_start = now;
@@ -234,10 +238,15 @@ int main(int argc, char *argv[]) try {
         // update camera based on pressed keys
         camera.update(button_down, dt);
 
-        // automatically change envmap and lighting for recording
-        if (frame_idx > (M_2_PI / camera.horizontal_rotation_speed) * R.fps) {
-            envmap = envmap2;
-            lighting = lighting2;
+        if (auto_recording) {
+            // automatically change envmap and lighting for recording
+            int full_circle_frames = (M_PI * 2 / camera.horizontal_rotation_speed) * R.fps;
+            if (frame_idx > 2 * full_circle_frames)
+                break;
+            if (frame_idx > full_circle_frames) {
+                envmap = envmap2;
+                lighting = lighting2;
+            }
         }
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
