@@ -132,6 +132,8 @@ int main(int argc, char *argv[]) try {
         4.0,
     };
 
+    float alpha = 0.f, beta = 0.f;
+
     lighting_settings lighting2 = {
         glm::vec3(0.2),
         glm::vec3(0.9),
@@ -154,7 +156,7 @@ int main(int argc, char *argv[]) try {
     int frame_idx = 0;
 
     recorder R;
-    bool auto_recording = true;
+    bool auto_recording = false;
 
     bool paused = false;
     bool running = true;
@@ -205,6 +207,17 @@ int main(int argc, char *argv[]) try {
 
         auto now = std::chrono::high_resolution_clock::now();
         float dt = std::chrono::duration_cast<std::chrono::duration<float>>(now - last_frame_start).count();
+
+        if (button_down[SDLK_y])
+            alpha += dt * 1.f;
+        if (button_down[SDLK_h])
+            alpha -= dt * 1.f;
+        if (button_down[SDLK_g])
+            beta -= dt * 1.f;
+        if (button_down[SDLK_j])
+            beta += dt * 1.f;
+        
+        lighting.sun_direction = glm::rotate(glm::rotate(glm::mat4(1.f), beta, glm::vec3(1.f, 0.f, 0.f)), alpha, glm::vec3(0.f, 0.f, 1.f)) * glm::vec4(0.f, 1.f, 0.f, 1.f);
 
         // automatically start recording on start
         if (auto_recording && !R.is_recording())
